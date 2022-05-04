@@ -1,5 +1,7 @@
 package org.agoncal.application.petstore.domain;
 
+import lombok.*;
+
 import javax.persistence.*;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.Date;
@@ -7,10 +9,16 @@ import java.util.List;
 
 /**
  * @author Antonio Goncalves
- *         http://www.antoniogoncalves.org
- *         --
+ * http://www.antoniogoncalves.org
+ * --
  */
 
+@ToString
+@Getter
+@Setter
+@RequiredArgsConstructor
+@NoArgsConstructor
+@EqualsAndHashCode(of = "id")
 @Entity
 @Table(name = "t_order")
 @XmlRootElement
@@ -23,43 +31,33 @@ public class Order {
     // =             Attributes             =
     // ======================================
 
+    public static final String FIND_ALL = "Order.findAll";
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     @Column(name = "order_date", updatable = false)
     @Temporal(TemporalType.DATE)
     private Date orderDate;
+    @NonNull
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "customer_fk", nullable = false)
     private Customer customer;
+    @NonNull
+    @Embedded
+    private CreditCard creditCard;
+    @Embedded
+    @NonNull
+    private Address deliveryAddress;
+
+
+    // ======================================
+    // =             Constants              =
+    // ======================================
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(name = "t_order_order_line",
             joinColumns = {@JoinColumn(name = "order_fk")},
             inverseJoinColumns = {@JoinColumn(name = "order_line_fk")})
     private List<OrderLine> orderLines;
-    @Embedded
-    private Address deliveryAddress;
-    @Embedded
-    private CreditCard creditCard = new CreditCard();
-
-    // ======================================
-    // =             Constants              =
-    // ======================================
-
-    public static final String FIND_ALL = "Order.findAll";
-
-    // ======================================
-    // =            Constructors            =
-    // ======================================
-
-    public Order() {
-    }
-
-    public Order(Customer customer, CreditCard creditCard, Address deliveryAddress) {
-        this.customer = customer;
-        this.creditCard = creditCard;
-        this.deliveryAddress = deliveryAddress;
-    }
 
     // ======================================
     // =          Lifecycle Methods         =
@@ -88,109 +86,4 @@ public class Order {
         return total;
     }
 
-    // ======================================
-    // =         Getters & setters          =
-    // ======================================
-
-    public Long getId() {
-        return id;
-    }
-
-    public Date getOrderDate() {
-        return orderDate;
-    }
-
-    public Customer getCustomer() {
-        return customer;
-    }
-
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
-    }
-
-    public List<OrderLine> getOrderLines() {
-        return orderLines;
-    }
-
-    public void setOrderLines(List<OrderLine> orderLines) {
-        this.orderLines = orderLines;
-    }
-
-    public Address getDeliveryAddress() {
-        return deliveryAddress;
-    }
-
-    public void setDeliveryAddress(Address deliveryAddress) {
-        this.deliveryAddress = deliveryAddress;
-    }
-
-    public CreditCard getCreditCard() {
-        return creditCard;
-    }
-
-    public void setCreditCard(CreditCard creditCard) {
-        this.creditCard = creditCard;
-    }
-
-    public String getCreditCardNumber() {
-        return creditCard.getCreditCardNumber();
-    }
-
-    public void setCreditCardNumber(String creditCardNumber) {
-        creditCard.setCreditCardNumber(creditCardNumber);
-    }
-
-    public CreditCardType getCreditCardType() {
-        return creditCard.getCreditCardType();
-    }
-
-    public void setCreditCardType(CreditCardType creditCardType) {
-        creditCard.setCreditCardType(creditCardType);
-    }
-
-    public String getCreditCardExpiryDate() {
-        return creditCard.getCreditCardExpDate();
-    }
-
-    public void setCreditCardExpiryDate(String creditCardExpiryDate) {
-        creditCard.setCreditCardExpDate(creditCardExpiryDate);
-    }
-
-    // ======================================
-    // =   Methods hash, equals, toString   =
-    // ======================================
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Order)) return false;
-
-        Order order = (Order) o;
-
-        if (!customer.equals(order.customer)) return false;
-        if (orderDate != null && !orderDate.equals(order.orderDate)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = orderDate != null ? orderDate.hashCode() : 0;
-        result = 31 * result + customer.hashCode();
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("Order");
-        sb.append("{id=").append(id);
-        sb.append(", orderDate=").append(orderDate);
-        sb.append(", customer=").append(customer);
-        sb.append(", orderLines=").append(orderLines);
-        sb.append(", deliveryAddress=").append(deliveryAddress);
-        sb.append(", creditCard=").append(creditCard);
-        sb.append('}');
-        return sb.toString();
-    }
 }
